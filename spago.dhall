@@ -4,7 +4,8 @@ You can edit this file as you like.
 -}
 { name = "my-project"
 , dependencies =
-    [ "checked-exceptions"
+    [ "arrays"
+    , "checked-exceptions"
     , "console"
     , "effect"
     , "psci-support"
