@@ -1,4 +1,13 @@
-module Data.Game where
+module Data.Game
+  ( GameOver
+  , gameOver
+  , class SpawnMeat
+  , spawnMeat
+
+  , Game
+  , newGame
+  , next
+  ) where
 
 import Prelude
 
