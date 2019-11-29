@@ -5,11 +5,12 @@ import Prelude
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except.Checked (ExceptV)
 import Control.Monad.Trans.Class (lift)
+import Data.Common (between', (~))
 import Data.Functor.Variant (SProxy(..))
 import Data.GamingArea (GamingArea, HeightOutOfRange, WidthOutOfRange, dimension, gamingArea)
 import Data.Snake (Direction, Point, Snake, canEat, grow, makeSnakeTowards, move)
-import Data.Variant (Variant, inj)
 import Data.Tuple.Nested ((/\))
+import Data.Variant (Variant, inj)
 import Type.Row (type (+))
 
 class Monad m <= SpawnMeat m where
@@ -64,7 +65,7 @@ next { gamingArea, snake, meat } = do
   let
     { head : x /\ y } = snake'
 
-  if not (between 0 w x && between 0 h y)
+  if not (x `between'` (0 ~ w) && y `between'` (0 ~ h))
     then throwError gameOver
     else pure
            { gamingArea
