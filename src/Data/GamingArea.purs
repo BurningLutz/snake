@@ -5,6 +5,7 @@ module Data.GamingArea
   , gamingArea
   , widthOutOfRange
   , heightOutOfRange
+  , dimension
   ) where
 
 import Prelude
@@ -14,6 +15,7 @@ import Control.Monad.Except.Checked (ExceptV)
 import Data.Functor.Variant (SProxy(..))
 import Data.Variant (Variant, inj)
 import Type.Row (type (+))
+import Data.Tuple.Nested (type (/\), (/\))
 
 type WidthOutOfRange r = (widthOutOfRange :: String | r)
 type HeightOutOfRange r = (heightOutOfRange :: String | r)
@@ -37,6 +39,9 @@ gamingArea
 gamingArea w h | w < 2 || w > 100 = throwError widthOutOfRange
                | h < 2 || h > 100 = throwError heightOutOfRange
                | otherwise        = pure (GamingArea w h)
+
+dimension :: GamingArea -> Int /\ Int
+dimension (GamingArea w h) = w /\ h
 
 instance showGamingArea :: Show GamingArea where
   show (GamingArea w h) = "GamingArea(" <> show w <> ", " <> show h <> ")"

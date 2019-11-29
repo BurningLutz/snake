@@ -9,6 +9,7 @@ module Data.Snake
   , move
   , grow
   , canBiteItself
+  , canEat
   ) where
 
 import Prelude
@@ -68,24 +69,24 @@ move :: Snake -> Snake
 move { direction, head, body } = do
   let
     x /\ y = head
-    newBody = snoc' (init body) direction
-    newHead = nextBody direction head
+    body' = snoc' (init body) direction
+    head' = nextBody direction head
 
   { direction
-  , head : newHead
-  , body : newBody
+  , head : head'
+  , body : body'
   }
 
 grow :: Snake -> Snake
 grow { direction, head, body } = do
   let
     x /\ y = head
-    newBody = snoc body direction
-    newHead = nextBody direction head
+    body' = snoc body direction
+    head' = nextBody direction head
 
   { direction
-  , head : newHead
-  , body : newBody
+  , head : head'
+  , body : body'
   }
 
 canBiteItself :: Snake -> Boolean
@@ -102,3 +103,6 @@ canBiteItself { body, head } = do
   case m of
     Nothing -> true
     Just _  -> false
+
+canEat :: Snake -> Point -> Boolean
+canEat { direction, head } p = toVector direction + head == p
