@@ -4,11 +4,13 @@ You can edit this file as you like.
 -}
 { name = "my-project"
 , dependencies =
-    [ "ansi"
+    [ "aff"
+    , "ansi"
     , "arrays"
     , "checked-exceptions"
     , "console"
     , "effect"
+    , "integers"
     , "js-timers"
     , "node-buffer"
     , "node-process"
