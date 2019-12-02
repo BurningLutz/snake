@@ -3,30 +3,67 @@ module Main where
 import Prelude
 
 import Control.Monad.Except.Checked (ExceptV, handleError, safe)
-import Data.GamingArea (HeightOutOfRange, WidthOutOfRange, gamingArea)
+import Control.Monad.Reader.Trans (ReaderT, runReaderT)
+import Data.Game (class SpawnMeat, newGame, next)
+import Data.GamingArea (HeightOutOfRange, WidthOutOfRange)
+import Data.Snake (Direction(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Class (class MonadEffect)
+import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (logShow)
+import Effect.Ref (new, read, write)
+import Effect.Timer (setTimeout)
 import Type.Row (type (+))
 
-logGamingArea
-  :: forall r m
-   . MonadEffect m
-  => Int -> Int
-  -> ExceptV (WidthOutOfRange + HeightOutOfRange + r) m Unit
-logGamingArea w h = do
-  area <- gamingArea w h
-  logShow area
+newtype AppM a = AppM (ReaderT Unit Effect a)
 
-main :: Effect Unit 
-main = do
+derive newtype instance monadAppM :: Monad AppM 
+derive newtype instance bindAppM :: Bind AppM 
+derive newtype instance applicativeAppM :: Applicative AppM 
+derive newtype instance applyAppM :: Apply AppM 
+derive newtype instance functorAppM :: Functor AppM 
+derive newtype instance monadEffectAppM :: MonadEffect AppM
+
+instance spawnMeatAppM :: SpawnMeat AppM where
+  spawnMeat w h = pure (50 /\ 30)
+
+runAppM :: AppM ~> Effect
+runAppM (AppM m) = runReaderT m unit
+
+runTick :: Effect Unit -> Effect Unit 
+runTick h = void $ setTimeout 100 h
+
+appM
+  :: forall r
+   . ExceptV
+       ( WidthOutOfRange
+       + HeightOutOfRange
+       + r
+       )
+       AppM Unit
+appM = do
+  game <- newGame 80 50 D (40 /\ 25)
+  gameRef <- liftEffect $ new game
+
   let
-    handleAll = handleError
-      { widthOutOfRange : \s -> logShow s
-      , heightOutOfRange : \s -> logShow s
-      }
+    tick = do
+      currentGame <- read gameRef
 
-  safe do
-    logGamingArea 0 20   # handleAll
-    logGamingArea 10 200 # handleAll
-    logGamingArea 20 30  # handleAll
+      let p = do
+            nextGame <- next currentGame
+            liftEffect $ write nextGame gameRef
+            liftEffect $ runTick tick
+
+      runAppM $ safe $ p # handleError
+        { gameOver : \_ -> do
+            logShow "Game Over"
+        }
+
+  liftEffect $ runTick tick
+
+main :: Effect Unit
+main = do
+  runAppM $ safe $ appM # handleError
+    { widthOutOfRange  : \s -> logShow s
+    , heightOutOfRange : \s -> logShow s
+    }
