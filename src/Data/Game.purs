@@ -63,21 +63,20 @@ next { gamingArea, snake, meat } = do
   let
     w /\ h = dimension gamingArea
 
-  snake' /\ meat' <- lift $ do
-    if snake `canEat` meat
-      then do
-        meat'' <- spawnMeat w h
-        pure $ grow snake /\ meat''
-      else
-        pure $ move snake /\ meat
+  snake' /\ meat' <- lift
+    if snake `canEat` meat then do
+      meat'' <- spawnMeat w h
+      pure $ grow snake /\ meat''
+    else
+      pure $ move snake /\ meat
 
   let
     { head : x /\ y } = snake'
 
-  if not (x `between'` (0 ~ w) && y `between'` (0 ~ h))
-    then throwError gameOver
-    else pure
-           { gamingArea
-           , snake : snake'
-           , meat : meat'
-           }
+  if not (x `between'` (0 ~ w) && y `between'` (0 ~ h)) then
+    throwError gameOver
+  else
+    pure { gamingArea
+         , snake : snake'
+         , meat : meat'
+         }
