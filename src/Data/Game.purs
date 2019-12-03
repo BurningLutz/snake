@@ -7,6 +7,7 @@ module Data.Game
   , Game
   , newGame
   , next
+  , towards
   ) where
 
 import Prelude
@@ -17,7 +18,7 @@ import Control.Monad.Trans.Class (lift)
 import Data.Common (between', (~))
 import Data.Functor.Variant (SProxy(..))
 import Data.GamingArea (GamingArea, HeightOutOfRange, WidthOutOfRange, dimension, gamingArea)
-import Data.Snake (Direction, Point, Snake, canEat, grow, makeSnakeTowards, move)
+import Data.Snake (Direction(..), Point, Snake, canBiteItself, canEat, grow, makeSnakeTowards, move)
 import Data.Tuple.Nested ((/\))
 import Data.Variant (Variant, inj)
 import Type.Row (type (+))
@@ -73,10 +74,20 @@ next { gamingArea, snake, meat } = do
   let
     { head : x /\ y } = snake'
 
-  if not (x `between'` (0 ~ w) && y `between'` (0 ~ h)) then
+  if not (x `between'` (0 ~ w) && y `between'` (0 ~ h))
+     || canBiteItself snake'
+  then
     throwError gameOver
   else
     pure { gamingArea
          , snake : snake'
          , meat : meat'
          }
+
+towards :: Direction -> Game -> Game
+towards dir game@{ snake : { direction } } = case dir, direction of
+  W, S -> game
+  S, W -> game
+  A, D -> game
+  D, A -> game
+  _, _ -> game { snake { direction = dir } }

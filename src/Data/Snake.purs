@@ -10,12 +10,13 @@ module Data.Snake
   , grow
   , canBiteItself
   , canEat
+  , toVector
   ) where
 
 import Prelude
 
 import Data.Array (foldM)
-import Data.Array.NonEmpty (NonEmptyArray, init, singleton, snoc, snoc', uncons)
+import Data.Array.NonEmpty (NonEmptyArray, init, singleton, cons, cons', uncons)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.Vector (Vector, uvecA, uvecD, uvecS, uvecW)
@@ -69,7 +70,7 @@ move :: Snake -> Snake
 move { direction, head, body } = do
   let
     x /\ y = head
-    body' = snoc' (init body) direction
+    body' = cons' direction (init body)
     head' = nextBody direction head
 
   { direction
@@ -81,7 +82,7 @@ grow :: Snake -> Snake
 grow { direction, head, body } = do
   let
     x /\ y = head
-    body' = snoc body direction
+    body' = cons direction body 
     head' = nextBody direction head
 
   { direction
@@ -105,4 +106,4 @@ canBiteItself { body, head } = do
     Just _  -> false
 
 canEat :: Snake -> Point -> Boolean
-canEat { direction, head } p = toVector direction + head == p
+canEat { direction, head } p = nextBody direction head == p
