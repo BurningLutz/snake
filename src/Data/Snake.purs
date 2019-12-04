@@ -11,6 +11,7 @@ module Data.Snake
   , canBiteItself
   , canEat
   , toVector
+  , towards
   ) where
 
 import Prelude
@@ -107,3 +108,11 @@ canBiteItself { body, head } = do
 
 canEat :: Snake -> Point -> Boolean
 canEat { direction, head } p = nextBody direction head == p
+
+towards :: Direction -> Snake -> Snake
+towards dir snake@{ direction } = case dir, direction of
+  W, S -> snake
+  S, W -> snake
+  A, D -> snake
+  D, A -> snake
+  _, _ -> snake { direction = dir }

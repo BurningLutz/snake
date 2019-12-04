@@ -7,11 +7,12 @@ import Control.Apply (lift2)
 import Control.Monad.Except.Checked (ExceptV, handleError, safe)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT)
 import Control.Monad.Trans.Class (lift)
-import Data.Game (class SpawnMeat, Game, GameOver, newGame, next, towards)
+import Data.Functor.Variant (SProxy(..))
+import Data.Game (class SpawnMeat, Game, GameOver, newGame, next)
 import Data.GamingArea (HeightOutOfRange, WidthOutOfRange)
 import Data.Int (toNumber)
 import Data.Renderer (class MonadTtyStream, renderGame, writeTtyString)
-import Data.Snake (Direction(..))
+import Data.Snake (Direction(..), towards)
 import Data.Tuple.Nested ((/\))
 import Data.Util (setRawMode)
 import Effect (Effect)
@@ -24,6 +25,7 @@ import Effect.Ref (Ref, new, read, write)
 import Node.Encoding (Encoding(..))
 import Node.Process (exit, stdin, stdout)
 import Node.Stream (onDataString, writeString)
+import Record (modify)
 import Type.Row (type (+))
 
 newtype AppM a = AppM (ReaderT Unit Aff a)
@@ -44,7 +46,7 @@ class Monad m <= MutableGame m where
 class Monad m <= Sleepable m where
   sleep :: Int -> m Unit
 
-class MutableGame m <= Interactive m where
+class Monad m <= Interactive m where
   onKey :: String -> m Unit -> m Unit
 
 class Monad m <= Quitable m where
@@ -63,7 +65,7 @@ instance sleepableAppM :: Sleepable AppM where
 
 instance monadTtyStreamAppM :: MonadTtyStream AppM where
   writeTtyString s = liftAff $ makeAff \cb -> do
-    -- here we call the `cb $ pure unit` to just workaround the either here
+    -- here we call the `cb $ pure unit` to just workaround the either
     void $ writeString stdout UTF8 s (cb $ pure unit)
     pure nonCanceler
   writeTtyEscapeCode esc = writeTtyString $ escapeCodeToString esc
@@ -105,7 +107,7 @@ appM = do
     towards' :: Direction -> m Unit
     towards' dir = do
       readGame gameRef
-        <#> towards dir
+        <#> modify (SProxy :: SProxy "snake") (towards dir)
         >>= flip writeGame gameRef
 
   -- manually handle Ctrl-C, the \3

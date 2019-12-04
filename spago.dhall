@@ -18,6 +18,7 @@ You can edit this file as you like.
     , "node-streams"
     , "psci-support"
     , "random"
+    , "record"
     , "refs"
     , "strings"
     , "transformers"

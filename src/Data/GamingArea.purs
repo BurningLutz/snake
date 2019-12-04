@@ -42,6 +42,3 @@ gamingArea w h | w < 2 || w > 100 = throwError widthOutOfRange
 
 dimension :: GamingArea -> Int /\ Int
 dimension (GamingArea w h) = w /\ h
-
-instance showGamingArea :: Show GamingArea where
-  show (GamingArea w h) = "GamingArea(" <> show w <> ", " <> show h <> ")"
