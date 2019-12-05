@@ -1,6 +1,5 @@
 module Data.Snake
   ( Direction(..)
-  , Point
   , Head
   , Body
   , Snake
@@ -18,9 +17,9 @@ import Prelude
 
 import Data.Array (foldM)
 import Data.Array.NonEmpty (NonEmptyArray, init, singleton, cons, cons', uncons)
+import Data.Common (Vector, Point, uvecA, uvecD, uvecS, uvecW)
 import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
-import Data.Vector (Vector, uvecA, uvecD, uvecS, uvecW)
+import Data.Tuple.Nested ((/\))
 
 data Direction
   = W
@@ -39,8 +38,6 @@ instance showDirection :: Show Direction where
   show S = "↓"
   show A = "←"
   show D = "→"
-
-type Point = Int /\ Int
 
 type Head = Point
 type Body = NonEmptyArray Direction

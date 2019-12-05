@@ -10,10 +10,11 @@ import Prelude
 
 import Ansi.Codes (EscapeCode(..))
 import Data.Array (modifyAtIndices, replicate, updateAtIndices)
+import Data.Common (Point)
 import Data.Foldable (foldl)
 import Data.Game (Game)
 import Data.GamingArea (dimension)
-import Data.Snake (Direction, Head, Point, Snake, toVector)
+import Data.Snake (Direction, Head, Snake, toVector)
 import Data.String (joinWith)
 import Data.Traversable (traverse_)
 import Data.Tuple (snd)
