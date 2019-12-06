@@ -23,7 +23,7 @@ import Node.Process (exit, stdin)
 import Node.Stream (onDataString)
 
 quit' :: Effect Unit 
-quit' = liftEffect $ void $ exit 0
+quit' = void $ exit 0
 
 newtype AppM a = AppM (ReaderT Unit Aff a)
 
