@@ -1,11 +1,11 @@
 module Data.Game
   ( GameOver
   , gameOver
-  , class SpawnMeat
+  , class MeatSpawner
   , spawnMeat
 
   , Game
-  , newGame
+  , new
   , next
   ) where
 
@@ -22,7 +22,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Variant (Variant, inj)
 import Type.Row (type (+))
 
-class Monad m <= SpawnMeat m where
+class Monad m <= MeatSpawner m where
   spawnMeat :: Int -> Int -> m Point
 
 type GameOver r = (gameOver :: Unit | r)
@@ -36,12 +36,12 @@ type Game =
   , meat :: Point
   }
 
-newGame
+new
   :: forall r m
-   . SpawnMeat m
+   . MeatSpawner m
   => Int -> Int -> Direction -> Point
   -> ExceptV (WidthOutOfRange + HeightOutOfRange + r) m Game
-newGame w h dir p = do
+new w h dir p = do
   area <- gamingArea w h
   meat <- lift $ spawnMeat w h
 
@@ -56,7 +56,7 @@ newGame w h dir p = do
 
 next
   :: forall r m
-   . SpawnMeat m
+   . MeatSpawner m
   => Game
   -> ExceptV (GameOver + r) m Game
 next { gamingArea, snake, meat } = do

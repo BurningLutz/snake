@@ -1,14 +1,10 @@
-module Data.Renderer
-  ( class MonadTtyStream
-  , writeTtyString
-  , writeTtyEscapeCode
-
-  , renderGame
+module Data.Renderer.Tty
+  ( render
   ) where
 
 import Prelude
 
-import Ansi.Codes (EscapeCode(..))
+import Ansi.Codes (EscapeCode(..), escapeCodeToString)
 import Data.Array (modifyAtIndices, replicate, updateAtIndices)
 import Data.Common (Point)
 import Data.Foldable (foldl)
@@ -16,15 +12,14 @@ import Data.Game (Game)
 import Data.GamingArea (dimension)
 import Data.Snake (Direction, Head, Snake, toVector)
 import Data.String (joinWith)
-import Data.Traversable (traverse_)
 import Data.Tuple (snd)
 import Data.Tuple.Nested (type (/\), (/\))
+import Effect (Effect)
+import Node.Encoding (Encoding(..))
+import Node.Process (stdout)
+import Node.Stream (writeString)
 
 type GameMap = Array (Array String)
-
-class Monad m <= MonadTtyStream m where
-  writeTtyString :: String -> m Unit
-  writeTtyEscapeCode :: EscapeCode -> m Unit
 
 area :: Int -> Int -> GameMap
 area w h = replicate w "." # replicate h
@@ -49,20 +44,22 @@ placeSnake { head, body } = placeObjectAt "@" head >>> placeBody
 
       in h' /\ gm'
 
-renderGame
-  :: forall m
-   . MonadTtyStream m
-  => Game
-  -> m Unit
-renderGame { gamingArea, meat, snake } = do
+writeTtyString :: String -> Effect Unit -> Effect Unit
+writeTtyString s cb = void $ writeString stdout UTF8 s cb
+
+render :: Game -> Effect Unit -> Effect Unit
+render { gamingArea, meat, snake } cb = do
   let
     w /\ h = dimension gamingArea
     areaMap = area w h
       # placeMeatAt meat
       # placeSnake snake
 
-  writeTtyEscapeCode $ Position 0 0
+    outputString =
+      escapeCodeToString (Position 0 0)
+      <> ( areaMap
+         # map (joinWith "" >>> (_ <> escapeCodeToString $ NextLine 1))
+         # joinWith ""
+         )
 
-  areaMap # traverse_ \chars -> do
-    writeTtyString $ joinWith "" chars
-    writeTtyEscapeCode $ NextLine 1
+  writeTtyString outputString cb
